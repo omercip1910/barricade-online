@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Barricade Platinum - Oda Sistemi</title>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <style>
+        :root { --orange: #ff8c00; --bg: #030303; --card: #111; }
+        body { background: var(--bg); color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; overflow: hidden; }
+        .menu-box { background: var(--card); padding: 20px; border-radius: 15px; border: 2px solid #222; width: 300px; text-align: center; box-shadow: 0 0 20px rgba(255,140,0,0.2); }
+        h1 { color: var(--orange); font-size: 1.2rem; margin-bottom: 20px; letter-spacing: 2px; }
+        .btn { width: 100%; padding: 12px; margin: 5px 0; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-orange { background: var(--orange); color: black; }
+        .btn-outline { background: transparent; border: 2px solid #333; color: white; }
+        .btn-outline:hover { border-color: var(--orange); }
+        input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #444; background: #000; color: white; text-align: center; box-sizing: border-box; }
+        #game-area { display: none; flex-direction: column; align-items: center; }
+        canvas { border: 3px solid #1a1a1a; border-radius: 15px; background: #000; margin-top: 10px; }
+        .info-tag { font-size: 0.8rem; color: #888; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="main-menu" class="menu-box">
+        <h1>BARRICADE ONLINE</h1>
+        <button class="btn btn-orange" onclick="createRoom()">ODA KUR</button>
+        <div style="margin: 15px 0; color: #444;">— VEYA —</div>
+        <input type="text" id="join-code" placeholder="ODA KODU GİR" maxlength="4">
+        <button class="btn btn-outline" onclick="joinRoom()">ODAYA KATIL</button>
+        <div class="info-tag">Senin ID: <span id="my-id-display">...</span></div>
+    </div>
+
+    <div id="game-area">
+        <div id="status-msg" style="color: var(--orange); font-weight: bold; margin-bottom: 10px;">BAĞLANILIYOR...</div>
+        <div style="background: #111; padding: 10px; border-radius: 10px; margin-bottom: 10px;">
+            ODA KODU: <span id="active-room-code" style="color:white; font-weight: 900;">----</span>
+        </div>
+        <canvas id="game" width="350" height="350"></canvas>
+        <button class="btn btn-outline" style="margin-top:20px; width: auto;" onclick="location.reload()">MENÜYE DÖN</button>
+    </div>
+
+<script>
+    // Firebase Yapılandırması (Senin Bilgilerin)
+    const firebaseConfig = {
+        apiKey: "AIzaSyBdsGqK7JBt0Bg5w-w23mQsKrvBFOgtAGw",
+        authDomain: "barricade-platinum-plus.firebaseapp.com",
+        projectId: "barricade-platinum-plus",
+        databaseURL: "https://barricade-platinum-plus-default-rtdb.firebaseio.com"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let myId = Math.random().toString(36).substring(2, 8).toUpperCase();
+    document.getElementById('my-id-display').innerText = myId;
+
+    let roomRef = null;
+    let myRole = null; // 0: Kurucu, 1: Katılan
+    let state = { turn: 0, walls: [], players: [{x:3, y:6, w:10, c:'#ff4757', ty:0}, {x:3, y:0, w:10, c:'#2e86de', ty:6}], over: false };
+
+    // ODA KURMA
+    function createRoom() {
+        const roomCode = Math.floor(1000 + Math.random() * 9000).toString(); // 4 haneli sayı
+        roomRef = db.ref('rooms/' + roomCode);
+        myRole = 0;
+        
+        roomRef.set({
+            state: state,
+            p1: myId,
+            p2: null,
+            status: "waiting"
+        });
+
+        startListening(roomCode);
+    }
+
+    // ODAYA KATILMA
+    function joinRoom() {
+        const code = document.getElementById('join-code').value.trim();
+        if(code.length !== 4) return alert("4 haneli kodu girin!");
+
+        roomRef = db.ref('rooms/' + code);
+        roomRef.once('value', snapshot => {
+            if(!snapshot.exists()) return alert("Oda bulunamadı!");
+            
+            myRole = 1;
+            roomRef.update({ p2: myId, status: "playing" });
+            startListening(code);
+        });
+    }
+
+    function startListening(code) {
+        document.getElementById('main-menu').style.display = 'none';
+        document.getElementById('game-area').style.display = 'flex';
+        document.getElementById('active-room-code').innerText = code;
+
+        roomRef.on('value', snapshot => {
+            const data = snapshot.val();
+            if(!data) return;
+            
+            state = data.state;
+            if(data.status === "waiting") {
+                document.getElementById('status-msg').innerText = "RAKİP BEKLENİYOR...";
+            } else {
+                document.getElementById('status-msg').innerText = (state.turn === myRole) ? "SIRA SENDE!" : "RAKİPTE...";
+                draw();
+            }
+        });
+    }
+
+    // --- OYUN MANTİĞİ VE ÇİZİM (AYNI KALDI) ---
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const CELL = 50;
+
+    function draw() {
+        ctx.fillStyle = '#000'; ctx.fillRect(0,0,350,350);
+        ctx.strokeStyle = '#222';
+        for(let i=0; i<7; i++) for(let j=0; j<7; j++) ctx.strokeRect(i*CELL, j*CELL, CELL, CELL);
+
+        state.walls.forEach(w => {
+            ctx.fillStyle = '#ff8c00';
+            if(w.t === 'v') ctx.fillRect((w.x+1)*CELL-4, w.y*CELL+5, 8, CELL-10);
+            else ctx.fillRect(w.x*CELL+5, (w.y+1)*CELL-4, CELL-10, 8);
+        });
+
+        state.players.forEach((p, i) => {
+            ctx.beginPath(); ctx.arc(p.x*CELL+25, p.y*CELL+25, 18, 0, Math.PI*2);
+            ctx.fillStyle = p.c; ctx.fill();
+            if(state.turn === i) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke(); }
+        });
+    }
+
+    canvas.onclick = (e) => {
+        if(state.turn !== myRole || state.over) return;
+        const r = canvas.getBoundingClientRect();
+        const x = e.clientX - r.left, y = e.clientY - r.top;
+        const cx = Math.floor(x/CELL), cy = Math.floor(y/CELL);
+
+        // Basit hareket mantığı (Komşu hücreye tıklandıysa)
+        let p = state.players[myRole];
+        if(Math.abs(cx - p.x) + Math.abs(cy - p.y) === 1) {
+            p.x = cx; p.y = cy;
+            state.turn = 1 - state.turn;
+            roomRef.update({ state: state });
+        }
+    };
+</script>
+</body>
+</html>
