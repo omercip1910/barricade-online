@@ -3,89 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Barricade Platinum - Pro</title>
+    <title>Barricade Platinum - Pro Edition</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
         :root { --orange: #ff8c00; --bg: #030303; --card: #111; }
-        body { background: var(--bg); color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 10px; box-sizing: border-box; overflow: hidden; }
+        body { background: var(--bg); color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 10px; overflow: hidden; }
         
-        /* Üst Panel Bilgileri */
-        .info-container { width: 100%; max-width: 350px; margin-bottom: 10px; }
-        .profile-bar { background: var(--card); padding: 10px; border-radius: 12px; border: 2px solid #222; text-align: center; margin-bottom: 8px; }
-        .id-label { font-size: 0.6rem; color: var(--orange); letter-spacing: 2px; font-weight: bold; }
-        .id-value { font-size: 1rem; color: #fff; font-weight: 900; margin-top: 3px; }
+        /* Üst Panel & Skorlar */
+        .header { width: 100%; max-width: 360px; margin-bottom: 15px; }
+        .profile-card { background: var(--card); padding: 12px; border-radius: 15px; border: 2px solid #222; text-align: center; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .scoreboard { display: flex; gap: 10px; }
+        .score-box { flex: 1; background: var(--card); border: 2px solid #222; padding: 10px; border-radius: 12px; text-align: center; transition: 0.3s; }
+        .score-box.active { border-color: var(--orange); background: rgba(255,140,0,0.05); }
+        .score-box h2 { margin: 0; font-size: 1.5rem; color: var(--orange); }
+        .score-box span { font-size: 0.7rem; color: #888; font-weight: bold; }
 
-        .scoreboard { display: flex; gap: 8px; margin-bottom: 10px; }
-        .score-card { flex: 1; background: var(--card); border: 2px solid #222; padding: 8px; border-radius: 12px; text-align: center; transition: 0.3s; }
-        .score-card.active { border-color: var(--orange); box-shadow: 0 0 10px var(--orange); }
-        .score-num { font-size: 1.4rem; color: var(--orange); font-weight: 900; }
-        .score-name { font-size: 0.7rem; font-weight: bold; color: #888; text-transform: uppercase; }
+        /* Butonlar & Kontroller */
+        .btn-group { display: flex; gap: 5px; width: 100%; max-width: 360px; margin-bottom: 10px; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 0.8rem; }
+        .btn-orange { background: var(--orange); color: black; }
+        .btn-dark { background: #1a1a1a; color: white; border: 1px solid #333; }
+        .btn-dark:active { background: #333; }
 
-        /* Butonlar */
-        .btn-main { width: 100%; padding: 12px; margin: 5px 0; border: 2px solid #333; border-radius: 8px; font-weight: 900; cursor: pointer; background: #000; color: #fff; text-transform: uppercase; }
-        .btn-main.orange { border-color: var(--orange); background: var(--orange); color: #000; }
+        /* Oyun Alanı */
+        canvas { border: 3px solid #1a1a1a; border-radius: 15px; background: #000; box-shadow: 0 0 20px rgba(0,0,0,0.5); touch-action: none; }
         
         /* Modallar */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 2000; }
-        .modal-box { background: #000; border: 2px solid var(--orange); border-radius: 20px; padding: 25px; width: 280px; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid var(--orange); background: #111; color: white; text-align: center; box-sizing: border-box; outline: none; }
-        
-        /* Oyun Alanı */
-        #game-area { display: none; flex-direction: column; align-items: center; }
-        canvas { border: 3px solid #1a1a1a; border-radius: 15px; background: #000; touch-action: none; }
-        #status-msg { color: var(--orange); font-weight: bold; margin: 5px 0; font-size: 0.9rem; letter-spacing: 1px; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 100; }
+        .menu-box { background: #000; border: 2px solid var(--orange); padding: 25px; border-radius: 20px; width: 300px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; background: #111; border: 1px solid var(--orange); color: white; text-align: center; border-radius: 8px; }
     </style>
 </head>
 <body>
 
-    <div id="main-menu" style="width: 300px;">
-        <div class="profile-bar">
-            <div class="id-label">BARRICADE PLATINUM</div>
-            <div class="id-value">SİSTEM ÇEVRİMİÇİ</div>
+    <div class="header">
+        <div class="profile-card">
+            <div style="font-size: 0.6rem; color: var(--orange); font-weight: bold;">BARRICADE PLATINUM</div>
+            <div id="status-text" style="font-size: 0.9rem; font-weight: 900; margin-top: 5px;">SİSTEM ÇEVRİMİÇİ</div>
         </div>
-        <button class="btn-main orange" onclick="startBotMode()">BOT İLE OYNA</button>
-        <button class="btn-main" onclick="showOnlineMenu()">ONLINE MOD</button>
-        <div style="text-align: center; margin-top: 15px;">
-            <input type="text" id="user-name-input" placeholder="İSİM YAZ..." style="width: 80%; border-color: #333;" maxlength="10">
-        </div>
-    </div>
-
-    <div id="online-modal" class="modal-overlay">
-        <div class="modal-box">
-            <h1 style="color:var(--orange); font-size:1.1rem; margin-top:0;">ONLINE ODA</h1>
-            <button class="btn-main orange" onclick="createRoom()">ODA KUR</button>
-            <div style="margin:10px 0; color:#555;">— VEYA —</div>
-            <input type="text" id="join-code-input" placeholder="4 HANELİ KOD" maxlength="4">
-            <button class="btn-main" onclick="joinRoom()">ODAYA KATIL</button>
-            <button class="btn-main" style="border:none; color:#888; font-size:0.7rem;" onclick="closeModals()">GERİ DÖN</button>
-        </div>
-    </div>
-
-    <div id="game-area">
-        <div class="info-container">
-            <div class="scoreboard">
-                <div id="card0" class="score-card active">
-                    <div id="name0" class="score-name">SEN</div>
-                    <div id="wall0" class="score-num">10</div>
-                </div>
-                <div id="card1" class="score-card">
-                    <div id="name1" class="score-name">BOT</div>
-                    <div id="wall1" class="score-num">10</div>
-                </div>
+        <div class="scoreboard">
+            <div id="p0-card" class="score-box active">
+                <span id="p0-name">OYUNCU</span>
+                <h2 id="p0-walls">10</h2>
             </div>
-            <div id="status-msg">HAZIR</div>
+            <div id="p1-card" class="score-box">
+                <span id="p1-name">BOT</span>
+                <h2 id="p1-walls">10</h2>
+            </div>
         </div>
+    </div>
 
-        <canvas id="game" width="350" height="350"></canvas>
-        
-        <div id="room-display" style="display:none; margin-top:10px; font-size:0.7rem; color:#444;">
-            ODA: <span id="display-room-code" style="color:var(--orange); font-weight:bold;">----</span>
+    <div class="btn-group">
+        <button id="move-btn" class="btn btn-orange" onclick="setMode('move')">YÜRÜ</button>
+        <button id="wall-btn" class="btn btn-dark" onclick="setMode('wall')">BARİKAT</button>
+    </div>
+
+    <canvas id="game" width="350" height="350"></canvas>
+
+    <button class="btn btn-dark" style="margin-top: 15px; width: 120px;" onclick="showMainMenu()">MENÜ</button>
+
+    <div id="main-menu" class="overlay" style="display: flex;">
+        <div class="menu-box">
+            <h2 style="color: var(--orange); margin-top: 0;">MOD SEÇİN</h2>
+            <button class="btn btn-orange" style="width: 100%; margin: 5px 0;" onclick="startBot('easy')">KOLAY BOT</button>
+            <button class="btn btn-orange" style="width: 100%; margin: 5px 0;" onclick="startBot('normal')">NORMAL BOT</button>
+            <button class="btn btn-orange" style="width: 100%; margin: 5px 0;" onclick="startBot('hard')">ZOR BOT</button>
+            <div style="margin: 15px 0; color: #444;">— VEYA —</div>
+            <button class="btn btn-dark" style="width: 100%;" onclick="openOnline()">ONLINE OYNA</button>
         </div>
-        <button class="btn-main" style="margin-top:15px; width:140px; font-size:0.7rem;" onclick="location.reload()">MENÜYE DÖN</button>
+    </div>
+
+    <div id="online-menu" class="overlay">
+        <div class="menu-box">
+            <h2 style="color: var(--orange); margin-top: 0;">ONLINE ODA</h2>
+            <button class="btn btn-orange" style="width: 100%;" onclick="createRoom()">ODA KUR</button>
+            <input type="text" id="room-code-input" placeholder="4 HANELİ KOD">
+            <button class="btn btn-dark" style="width: 100%;" onclick="joinRoom()">KATIL</button>
+            <button class="btn btn-dark" style="border: none; margin-top: 10px; color: #666;" onclick="showMainMenu()">GERİ</button>
+        </div>
     </div>
 
 <script>
+    // Firebase Ayarları
     const firebaseConfig = {
         apiKey: "AIzaSyBdsGqK7JBt0Bg5w-w23mQsKrvBFOgtAGw",
         authDomain: "barricade-platinum-plus.firebaseapp.com",
@@ -95,92 +95,98 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let roomRef = null;
-    let myRole = 0; 
-    let isOnline = false;
-    let state = { turn: 0, walls: [], players: [{x:3, y:6, w:10, c:'#ff4757', ty:0}, {x:3, y:0, w:10, c:'#2e86de', ty:6}], over: false };
-
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
     const CELL = 50;
 
-    function showOnlineMenu() { document.getElementById('online-modal').style.display = 'flex'; }
-    function closeModals() { document.getElementById('online-modal').style.display = 'none'; }
+    let gameMode = 'move'; // 'move' veya 'wall'
+    let difficulty = 'normal';
+    let isOnline = false;
+    let myRole = 0;
+    let roomRef = null;
+    let state = {
+        turn: 0,
+        walls: [], // {x, y, t: 'v'/'h'}
+        players: [
+            {x: 3, y: 6, w: 10, c: '#ff4757', target: 0},
+            {x: 3, y: 0, w: 10, c: '#2e86de', target: 6}
+        ],
+        over: false
+    };
 
-    function startBotMode() {
-        const name = document.getElementById('user-name-input').value.trim() || "SEN";
-        document.getElementById('name0').innerText = name;
-        document.getElementById('name1').innerText = "BOT";
+    function setMode(m) {
+        if(state.turn !== myRole) return;
+        gameMode = m;
+        document.getElementById('move-btn').className = m === 'move' ? 'btn btn-orange' : 'btn btn-dark';
+        document.getElementById('wall-btn').className = m === 'wall' ? 'btn btn-orange' : 'btn btn-dark';
+    }
+
+    function showMainMenu() {
+        document.querySelectorAll('.overlay').forEach(el => el.style.display = 'none');
+        document.getElementById('main-menu').style.display = 'flex';
+    }
+
+    function openOnline() {
+        document.getElementById('main-menu').style.display = 'none';
+        document.getElementById('online-menu').style.display = 'flex';
+    }
+
+    function startBot(diff) {
+        difficulty = diff;
         isOnline = false;
         myRole = 0;
+        state.players[1].w = diff === 'easy' ? 5 : (diff === 'hard' ? 15 : 10);
+        showMainMenu();
         document.getElementById('main-menu').style.display = 'none';
-        document.getElementById('game-area').style.display = 'flex';
+        updateUI();
         draw();
     }
 
+    // --- ONLINE MANTIK ---
     function createRoom() {
-        const name = document.getElementById('user-name-input').value.trim() || "HOST";
-        document.getElementById('name0').innerText = name;
-        document.getElementById('name1').innerText = "RAKİP";
-        isOnline = true; myRole = 0;
         const code = Math.floor(1000 + Math.random() * 9000).toString();
+        isOnline = true; myRole = 0;
         roomRef = db.ref('rooms/' + code);
-        roomRef.set({ state: state, status: "waiting" });
-        setupGameUI(code);
+        roomRef.set({ state: state, status: 'waiting' });
+        listenRoom(code);
     }
 
     function joinRoom() {
-        const code = document.getElementById('join-code-input').value.trim();
-        if(code.length !== 4) return alert("4 haneli kod gir!");
-        const name = document.getElementById('user-name-input').value.trim() || "GUEST";
-        document.getElementById('name1').innerText = name;
-        document.getElementById('name0').innerText = "RAKİP";
+        const code = document.getElementById('room-code-input').value;
+        if(code.length !== 4) return;
         isOnline = true; myRole = 1;
         roomRef = db.ref('rooms/' + code);
-        roomRef.once('value', s => {
-            if(!s.exists()) return alert("Oda bulunamadı!");
-            roomRef.update({ status: "playing" });
-            setupGameUI(code);
-        });
+        roomRef.update({ status: 'playing' });
+        listenRoom(code);
     }
 
-    function setupGameUI(code) {
-        closeModals();
-        document.getElementById('main-menu').style.display = 'none';
-        document.getElementById('game-area').style.display = 'flex';
-        document.getElementById('room-display').style.display = 'block';
-        document.getElementById('display-room-code').innerText = code;
-        
+    function listenRoom(code) {
+        document.querySelectorAll('.overlay').forEach(el => el.style.display = 'none');
         roomRef.on('value', s => {
-            const data = s.val();
-            if(!data) return;
-            state = data.state;
-            updateUI(data.status);
+            if(!s.exists()) return;
+            state = s.val().state;
+            document.getElementById('status-text').innerText = "ODA: " + code;
+            updateUI();
             draw();
         });
     }
 
-    function updateUI(status) {
-        const msg = document.getElementById('status-msg');
-        if(status === "waiting") msg.innerText = "RAKİP BEKLENİYOR...";
-        else if(state.over) msg.innerText = "OYUN BİTTİ!";
-        else msg.innerText = state.turn === myRole ? "SIRA SENDE!" : "RAKİPTE...";
-
-        document.getElementById('wall0').innerText = state.players[0].w;
-        document.getElementById('wall1').innerText = state.players[1].w;
-        document.getElementById('card0').className = state.turn === 0 ? 'score-card active' : 'score-card';
-        document.getElementById('card1').className = state.turn === 1 ? 'score-card active' : 'score-card';
-    }
-
+    // --- ÇİZİM VE OYUN ---
     function draw() {
         ctx.fillStyle = '#000'; ctx.fillRect(0,0,350,350);
-        ctx.strokeStyle = '#222'; ctx.lineWidth = 1;
-        for(let i=0; i<=7; i++) {
-            ctx.beginPath(); ctx.moveTo(i*CELL,0); ctx.lineTo(i*CELL,350); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(0,i*CELL); ctx.lineTo(350,i*CELL); ctx.stroke();
-        }
+        ctx.strokeStyle = '#222';
+        for(let i=0; i<7; i++) for(let j=0; j<7; j++) ctx.strokeRect(i*CELL, j*CELL, CELL, CELL);
+
+        // Duvarlar
+        state.walls.forEach(w => {
+            ctx.fillStyle = var(--orange);
+            if(w.t === 'v') ctx.fillRect((w.x+1)*CELL-4, w.y*CELL+5, 8, CELL-10);
+            else ctx.fillRect(w.x*CELL+5, (w.y+1)*CELL-4, CELL-10, 8);
+        });
+
+        // Oyuncular
         state.players.forEach((p, i) => {
-            ctx.shadowBlur = 10; ctx.shadowColor = p.c;
+            ctx.shadowBlur = 15; ctx.shadowColor = p.c;
             ctx.beginPath(); ctx.arc(p.x*CELL+25, p.y*CELL+25, 18, 0, Math.PI*2);
             ctx.fillStyle = p.c; ctx.fill();
             ctx.shadowBlur = 0;
@@ -190,26 +196,57 @@
 
     canvas.onclick = (e) => {
         if(state.turn !== myRole || state.over) return;
-        const r = canvas.getBoundingClientRect();
-        const x = (e.clientX - r.left) * (350/r.width), y = (e.clientY - r.top) * (350/r.height);
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX - rect.left) * (350/rect.width);
+        const y = (e.clientY - rect.top) * (350/rect.height);
         const cx = Math.floor(x/CELL), cy = Math.floor(y/CELL);
-        
-        let p = state.players[myRole];
-        if(Math.abs(cx - p.x) + Math.abs(cy - p.y) === 1) {
-            p.x = cx; p.y = cy;
-            if(p.y === p.ty) state.over = true;
-            state.turn = 1 - state.turn;
-            if(isOnline) roomRef.update({ state: state });
-            else { updateUI(); draw(); if(!state.over) setTimeout(botMove, 600); }
+
+        if(gameMode === 'move') {
+            let p = state.players[myRole];
+            if(Math.abs(cx - p.x) + Math.abs(cy - p.y) === 1) {
+                // Duvar kontrolü buraya eklenebilir
+                p.x = cx; p.y = cy;
+                if(p.y === p.target) state.over = true;
+                endTurn();
+            }
+        } else {
+            // Barikat Koyma (Basit dikey duvar)
+            if(state.players[myRole].w > 0) {
+                state.walls.push({x: cx, y: cy, t: 'v'});
+                state.players[myRole].w--;
+                endTurn();
+            }
         }
     };
 
-    function botMove() {
+    function endTurn() {
+        state.turn = 1 - state.turn;
+        if(isOnline) roomRef.update({ state: state });
+        else {
+            updateUI(); draw();
+            if(!state.over && state.turn === 1) setTimeout(botTurn, 600);
+        }
+    }
+
+    function botTurn() {
         let b = state.players[1];
-        if(b.y < 6) b.y++; 
-        if(b.y === 6) state.over = true;
+        // Zorluk seviyesine göre hareket
+        if(difficulty === 'hard' && Math.random() > 0.5 && b.w > 0) {
+            state.walls.push({x: state.players[0].x, y: state.players[0].y, t: 'h'});
+            b.w--;
+        } else {
+            if(b.y < 6) b.y++;
+        }
+        if(b.y === b.target) state.over = true;
         state.turn = 0;
         updateUI(); draw();
+    }
+
+    function updateUI() {
+        document.getElementById('p0-walls').innerText = state.players[0].w;
+        document.getElementById('p1-walls').innerText = state.players[1].w;
+        document.getElementById('p0-card').className = state.turn === 0 ? 'score-box active' : 'score-box';
+        document.getElementById('p1-card').className = state.turn === 1 ? 'score-box active' : 'score-box';
     }
 </script>
 </body>
