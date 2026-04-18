@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Tichk Platinum Plus</title>
-    <!-- Firebase SDK (Version 9 Compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     
@@ -50,8 +49,8 @@
     </div>
 
     <div class="scoreboard">
-        <div id="c0" class="card active"><small id="name-p1">TICHK</small><div class="num" id="w0">10</div></div>
-        <div id="c1" class="card"><small id="p2-label">BOT</small><div class="num" id="w1">10</div></div>
+        <div id="c0" class="card active"><small id="name-p1">HOST</small><div class="num" id="w0">10</div></div>
+        <div id="c1" class="card"><small id="p2-label">GUEST</small><div class="num" id="w1">10</div></div>
     </div>
 
     <div class="mode-selection">
@@ -76,11 +75,11 @@
 </div>
 
 <script>
-    // --- GÜNCELLENMİŞ FIREBASE AYARLARI ---
+    // --- FIREBASE AYARLARI ---
     const firebaseConfig = {
-        apiKey: "BURAYA_KENDI_API_KEYINI_YAPISTIR", // Firebase Console > Project Settings
+        apiKey: "BURAYA_API_KEY_EKLE",
         authDomain: "barricade-platinum-plus.firebaseapp.com",
-        databaseURL: "https://barricade-platinum-plus-default-rtdb.firebaseio.com/", // Sizin verdiğiniz URL
+        databaseURL: "https://barricade-platinum-plus-default-rtdb.firebaseio.com/",
         projectId: "barricade-platinum-plus",
         storageBucket: "barricade-platinum-plus.appspot.com",
         messagingSenderId: "BURAYA_SENDER_ID",
@@ -114,25 +113,19 @@
             localStorage.setItem('tichk_fixed_id', myFixedId);
         }
         document.getElementById('display-my-id').innerText = myFixedId;
-        let savedName = localStorage.getItem('barricade_name') || "TICHK";
-        document.getElementById('name-p1').innerText = savedName.toUpperCase();
-        document.getElementById('user-name-input').value = savedName;
     }
 
     // --- ONLINE MANTIK ---
     function hostGame() {
         currentRoom = myFixedId;
-        myRole = 'host';
+        myRole = 'host'; // Sen açtın, Host'sun (Sıra 0)
         state.mode = 'online';
-        state.over = false;
         state.turn = 0;
         state.walls = [];
+        state.over = false;
         state.players = JSON.parse(JSON.stringify(initialPlayers));
         
-        db.ref('rooms/' + currentRoom).set({
-            state: state,
-            status: 'waiting'
-        }).then(() => {
+        db.ref('rooms/' + currentRoom).set({ state: state, status: 'waiting' }).then(() => {
             toggleRoomModal(false);
             listenToRoom();
         });
@@ -142,11 +135,12 @@
         const tid = document.getElementById('target-room-id').value.trim().toUpperCase();
         if(tid.length < 5) return;
         currentRoom = tid;
-        db.ref('rooms/' + tid).once('value', s => {
+        myRole = 'guest'; // Sen katıldın, Guest'sin (Sıra 1)
+        
+        db.ref('rooms/' + currentRoom).once('value', s => {
             if(s.exists()){
-                myRole = 'guest';
                 state.mode = 'online';
-                db.ref('rooms/' + tid).update({ status: 'playing' });
+                db.ref('rooms/' + currentRoom).update({ status: 'playing' });
                 toggleRoomModal(false);
                 listenToRoom();
             } else { alert("Oda bulunamadı!"); }
@@ -164,24 +158,23 @@
         });
     }
 
-    function syncOnlineMove() {
+    function syncMove() {
         if(state.mode === 'online' && currentRoom) {
             db.ref('rooms/' + currentRoom + '/state').set(state);
         }
     }
 
     function updateStatusMsg() {
+        // Sıra kontrolü: Host ise 0, Guest ise 1 olmalı
         const isMyTurn = (myRole === 'host' && state.turn === 0) || (myRole === 'guest' && state.turn === 1);
         const msg = document.getElementById('msg');
         if(state.over) { msg.innerText = "OYUN BİTTİ!"; return; }
-        if(state.mode === 'bot') { msg.innerText = state.turn === 0 ? "SIRA SENDE" : "BOT DÜŞÜNÜYOR..."; }
-        else {
-            msg.innerText = isMyTurn ? "SENİN SIRAN!" : "RAKİP SIRASI...";
-            msg.style.color = isMyTurn ? "var(--orange)" : "#888";
-        }
+        
+        msg.innerText = isMyTurn ? "SENİN SIRAN!" : "RAKİP SIRASI...";
+        msg.style.color = isMyTurn ? "var(--orange)" : "#888";
     }
 
-    // --- ÇİZİM VE HAREKET ---
+    // --- OYUN MEKANİKLERİ ---
     function draw() {
         ctx.fillStyle = '#000'; ctx.fillRect(0,0,350,350);
         ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 1;
@@ -208,10 +201,11 @@
 
     function handleInput(e) {
         if(state.over) return;
-        if(state.mode === 'online') {
-            const isMyTurn = (myRole === 'host' && state.turn === 0) || (myRole === 'guest' && state.turn === 1);
-            if(!isMyTurn) return;
-        } else if(state.turn === 1) return;
+        
+        // Sıra kontrolü: Sadece kendi sırasındaysa dokunabilir
+        const isMyTurn = (myRole === 'host' && state.turn === 0) || (myRole === 'guest' && state.turn === 1);
+        if(state.mode === 'online' && !isMyTurn) return; 
+        if(state.mode === 'bot' && state.turn === 1) return;
 
         const r = canvas.getBoundingClientRect();
         const scaleX = 350 / r.width, scaleY = 350 / r.height;
@@ -220,14 +214,16 @@
         const x = (cX - r.left) * scaleX, y = (cY - r.top) * scaleY;
         const cx = Math.floor(x/CELL), cy = Math.floor(y/CELL), mx = x%CELL, my = y%CELL;
 
-        if(mx > CELL*0.8 && cx < 6 && placeWall(cx, cy, 'v', state.turn)) { syncOnlineMove(); next(); return; }
-        if(my > CELL*0.8 && cy < 6 && placeWall(cx, cy, 'h', state.turn)) { syncOnlineMove(); next(); return; }
+        // Duvar koyma
+        if(mx > CELL*0.8 && cx < 6 && placeWall(cx, cy, 'v', state.turn)) { next(); return; }
+        if(my > CELL*0.8 && cy < 6 && placeWall(cx, cy, 'h', state.turn)) { next(); return; }
 
+        // Oyuncu hareket
         let p = state.players[state.turn];
         if(Math.abs(cx-p.x)+Math.abs(cy-p.y)===1 && !isBlocked(p.x,p.y,cx,cy,state.walls)) {
             p.x=cx; p.y=cy; 
             if(p.y === p.ty) end(state.turn === 0 ? "KAZANDIN!" : "RAKİP KAZANDI!"); 
-            else { syncOnlineMove(); next(); }
+            else next();
         }
     }
 
@@ -246,7 +242,10 @@
     }
 
     function next() {
-        state.turn = 1 - state.turn; draw(); updateStatusMsg();
+        state.turn = 1 - state.turn; 
+        syncMove(); // Veriyi gönder
+        draw(); 
+        updateStatusMsg();
         if(!state.over && state.mode === 'bot' && state.turn === 1) setTimeout(botAction, 500);
     }
 
@@ -261,18 +260,11 @@
         if (b.y === 6) end("BOT KAZANDI!"); else next();
     }
 
-    function setMode(m) { 
-        if(currentRoom) db.ref('rooms/'+currentRoom).off(); 
-        currentRoom=null; state.mode=m; 
-        document.getElementById('p2-label').innerText = m==='online'?"RAKİP":"BOT"; 
-        document.querySelectorAll('.btn-main').forEach(b => b.classList.toggle('active', b.id === 'm_'+m));
-        reset(); 
-    }
-    
+    function end(m) { state.over=true; document.getElementById('msg').innerText = m; syncMove(); draw(); }
+    function setMode(m) { if(currentRoom) db.ref('rooms/'+currentRoom).off(); currentRoom=null; state.mode=m; reset(); }
     function reset() { state.walls=[]; state.over=false; state.turn=0; state.players=JSON.parse(JSON.stringify(initialPlayers)); draw(); }
-    function end(m) { state.over=true; document.getElementById('msg').innerText = m; syncOnlineMove(); draw(); }
-    function updateName() { const v = document.getElementById('user-name-input').value.trim(); if(v.length>=2){ localStorage.setItem('barricade_name', v); document.getElementById('name-p1').innerText = v.toUpperCase(); } }
     function toggleRoomModal(s) { document.getElementById('room-screen').style.display = s?'flex':'none'; }
+    function updateName() { const v = document.getElementById('user-name-input').value.trim(); if(v.length>=2){ localStorage.setItem('barricade_name', v); document.getElementById('name-p1').innerText = v.toUpperCase(); } }
 
     canvas.addEventListener('mousedown', handleInput);
     canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleInput(e); }, {passive: false});
