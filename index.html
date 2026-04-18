@@ -2,107 +2,54 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Tichk Platinum Plus</title>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     
     <style>
-        :root { --orange: #ff8c00; --bg: #030303; --card: #111; --blue: #00e5ff; }
+        :root { --orange: #ff8c00; --bg: #030303; --card: #111; }
+        * { box-sizing: border-box; touch-action: manipulation; }
         body { 
             background: var(--bg); color: white; font-family: sans-serif;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            min-height: 100vh; margin: 0; padding: 10px; box-sizing: border-box; overflow: hidden;
+            display: flex; flex-direction: column; align-items: center; 
+            min-height: 100vh; margin: 0; padding: 10px; overflow-x: hidden;
         }
-        .profile-bar {
-            width: 100%; max-width: 350px; background: var(--card); padding: 15px;
-            border-radius: 15px; border: 2px solid #222; margin-bottom: 15px;
-            box-shadow: 0 0 10px rgba(255, 140, 0, 0.1);
-        }
-        .id-label { font-size: 0.65rem; color: var(--orange); letter-spacing: 2px; font-weight: bold; margin-bottom: 5px; }
-        .id-value { font-size: 1rem; color: #fff; font-weight: 900; font-family: monospace; margin-bottom: 10px; }
-        .name-edit-area { display: flex; gap: 8px; }
-        .name-input-mini {
-            flex: 1; background: #000; border: 1px solid #333; color: #fff;
-            padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; outline: none; transition: 0.3s;
-        }
-        .btn-save-mini {
-            background: var(--orange); color: #000; border: none; padding: 0 15px;
-            border-radius: 8px; font-weight: 900; font-size: 0.7rem; cursor: pointer;
-        }
-        .header { text-align: center; margin-bottom: 10px; }
-        h1 { margin: 0; font-size: 1.1rem; color: var(--orange); letter-spacing: 1.5px; font-weight: 900; }
-        #msg { color: #fff; font-size: 0.8rem; min-height: 18px; margin: 5px 0; font-weight: bold; }
-        .scoreboard { display: flex; gap: 8px; width: 100%; max-width: 350px; margin-bottom: 10px; }
-        .card { 
-            flex: 1; background: var(--card); border: 2px solid #222; padding: 8px; 
-            border-radius: 12px; text-align: center;
-        }
-        .card.active { border-color: var(--orange); box-shadow: 0 0 15px var(--orange); }
-        .num { font-size: 1.6rem; color: var(--orange); font-weight: 900; }
-        .mode-selection { display: flex; gap: 5px; width: 100%; max-width: 350px; margin-bottom: 10px; }
-        .btn-main { 
-            flex: 1; padding: 12px 5px; font-size: 0.65rem; font-weight: 900; 
-            background: #000; border: 2px solid #333; border-radius: 8px; cursor: pointer; color: #fff; transition: 0.2s;
-        }
-        .btn-main.active[data-mode="bot"] { border-color: var(--orange); background: var(--orange); color: #000; }
-        .btn-main.active[data-mode="online"] { border-color: #f1c40f; background: #f1c40f; color: #000; }
-        .diff-selection { display: flex; gap: 4px; margin-bottom: 10px; }
-        .btn-diff { 
-            background: #111; color: #555; border: 1px solid #333; 
-            padding: 6px 12px; border-radius: 5px; font-size: 0.65rem; font-weight: bold; cursor: pointer;
-        }
-        .btn-diff.active { border-color: #fff; color: #fff; background: #222; }
-        .canvas-container { border: 3px solid #1a1a1a; border-radius: 15px; background: #000; }
-        canvas { display: block; touch-action: none; border-radius: 12px; }
-        
-        /* Yeni Online Arayüzü */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; z-index: 2000;
-        }
-        .modal-box {
-            background: #111; border: 2px solid var(--orange); border-radius: 20px;
-            padding: 25px; width: 300px; text-align: center;
-        }
-        .neon-input {
-            background: #000; border: 1px solid #444; color: white;
-            padding: 12px; border-radius: 10px; width: 100%; margin: 10px 0; outline: none; text-align: center; box-sizing: border-box; font-family: monospace;
-        }
-        .btn-action {
-            background: var(--orange); color: #000; border: none; padding: 12px; 
-            border-radius: 10px; font-weight: 900; width: 100%; cursor: pointer; margin-top: 10px;
-        }
-        .divider { height: 1px; background: #333; margin: 20px 0; position: relative; }
-        .divider::after { content: "VEYA"; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #111; padding: 0 10px; font-size: 0.7rem; color: #666; }
+        .main-wrapper { width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .profile-bar { width: 100%; background: var(--card); padding: 10px; border-radius: 12px; border: 1px solid #222; }
+        .id-label { font-size: 0.6rem; color: var(--orange); font-weight: bold; }
+        .id-value { font-size: 0.9rem; font-family: monospace; margin: 2px 0; }
+        .name-edit-area { display: flex; gap: 5px; }
+        .name-input-mini { flex: 1; background: #000; border: 1px solid #333; color: #fff; padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; }
+        .header h1 { margin: 2px 0; font-size: 1rem; color: var(--orange); text-align: center; }
+        #msg { font-size: 0.8rem; height: 18px; color: #ccc; margin-bottom: 5px; font-weight: bold; }
+        .scoreboard { display: flex; gap: 5px; width: 100%; }
+        .card { flex: 1; background: var(--card); border: 2px solid #222; padding: 5px; border-radius: 10px; text-align: center; }
+        .card.active { border-color: var(--orange); box-shadow: 0 0 10px rgba(255,140,0,0.3); }
+        .num { font-size: 1.2rem; color: var(--orange); font-weight: 900; }
+        .mode-selection { display: flex; gap: 4px; width: 100%; }
+        .btn-main { flex: 1; padding: 8px 2px; font-size: 0.65rem; font-weight: 900; background: #000; border: 1px solid #333; border-radius: 6px; color: #fff; cursor: pointer; }
+        .btn-main.active { background: var(--orange); color: #000; border-color: var(--orange); }
+        .canvas-container { width: 90vw; height: 90vw; max-width: 350px; max-height: 350px; border: 2px solid #1a1a1a; border-radius: 10px; background: #000; }
+        canvas { width: 100%; height: 100%; display: block; border-radius: 8px; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; z-index: 2000; }
+        .modal-box { background: #111; border: 2px solid var(--orange); border-radius: 15px; padding: 20px; width: 85%; max-width: 300px; text-align: center; }
+        .btn-action { width: 100%; padding: 12px; margin-top: 8px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; }
+        .diff-selection { display: flex; gap: 5px; margin-top: 5px; }
+        .btn-diff { font-size: 0.6rem; padding: 4px 8px; background: #111; border: 1px solid #333; color: #555; border-radius: 4px; cursor: pointer; }
+        .btn-diff.active { color: #fff; border-color: #fff; }
     </style>
 </head>
 <body>
 
+<div class="main-wrapper">
     <div class="profile-bar">
         <div class="id-label">MY TICHK ID</div>
         <div class="id-value" id="display-my-id">---</div>
         <div class="name-edit-area">
-            <input type="text" id="user-name-input" class="name-input-mini" placeholder="Yeni İsim..." maxlength="12">
-            <button class="btn-save-mini" onclick="updateName()">SET</button>
-        </div>
-    </div>
-
-    <!-- Yeni Online Lobi Arayüzü -->
-    <div id="room-screen" class="modal-overlay" style="display:none">
-        <div class="modal-box">
-            <h1 style="font-size: 1.1rem; color: var(--orange); margin-bottom: 20px;">ONLINE LOBBY</h1>
-            
-            <button class="btn-action" onclick="hostGame()">ODA AÇ (ID'nle)</button>
-            <p style="font-size: 0.6rem; color: #888; margin-top: 5px;">Başkaları senin ID'ni girerek bağlanabilir.</p>
-
-            <div class="divider"></div>
-
-            <input type="text" id="target-room-id" class="neon-input" placeholder="Oda Sahibi ID Gir">
-            <button class="btn-action" style="background:#2e86de; color:white;" onclick="joinGame()">ODAYA KATIL</button>
-            
-            <button class="btn-action" style="background:#222; color:#fff" onclick="toggleRoomModal(false)">İPTAL</button>
+            <input type="text" id="user-name-input" class="name-input-mini" placeholder="İsim..." maxlength="12">
+            <button onclick="updateName()" style="background:var(--orange); border:none; border-radius:5px; font-size:0.7rem; padding:0 10px; cursor:pointer;">SET</button>
         </div>
     </div>
 
@@ -112,19 +59,13 @@
     </div>
 
     <div class="scoreboard">
-        <div id="c0" class="card active">
-            <small id="name-p1" style="color:var(--orange); font-weight:bold">TICHK</small>
-            <div class="num" id="w0">10</div>
-        </div>
-        <div id="c1" class="card">
-            <small id="p2-label">BOT</small>
-            <div class="num" id="w1">10</div>
-        </div>
+        <div id="c0" class="card active"><small id="name-p1">TICHK</small><div class="num" id="w0">10</div></div>
+        <div id="c1" class="card"><small id="p2-label">BOT</small><div class="num" id="w1">10</div></div>
     </div>
 
     <div class="mode-selection">
-        <button id="m_bot" class="btn-main active" data-mode="bot" onclick="setMode('bot')">BOT</button>
-        <button id="m_online" class="btn-main" data-mode="online" onclick="toggleRoomModal(true)">ONLINE</button>
+        <button id="m_bot" class="btn-main active" onclick="setMode('bot')">BOT</button>
+        <button id="m_online" class="btn-main" onclick="toggleRoomModal(true)">ONLINE</button>
     </div>
 
     <div class="diff-selection" id="diff-box">
@@ -135,17 +76,29 @@
     <div class="canvas-container">
         <canvas id="game" width="350" height="350"></canvas>
     </div>
+</div>
+
+<div id="room-screen" class="modal-overlay" style="display:none">
+    <div class="modal-box">
+        <h2 style="color:var(--orange); font-size:1.1rem; margin-top:0;">ONLINE LOBBY</h2>
+        <button class="btn-action" style="background:var(--orange);" onclick="hostGame()">ODA AÇ (ID'NLE)</button>
+        <div style="margin: 15px 0; height: 1px; background: #333; position:relative;"></div>
+        <input type="text" id="target-room-id" style="width:100%; padding:12px; background:#000; color:#fff; border:1px solid #444; border-radius:8px; text-align:center; margin-bottom:8px;" placeholder="Rakip ID Gir">
+        <button class="btn-action" style="background:#2e86de; color:#fff;" onclick="joinGame()">ODAYA KATIL</button>
+        <button class="btn-action" style="background:#222; color:#fff;" onclick="toggleRoomModal(false)">İPTAL</button>
+    </div>
+</div>
 
 <script>
-    // --- FIREBASE KONFİGÜRASYONU ---
+    // --- FIREBASE AYARLARI ---
     const firebaseConfig = {
         apiKey: "BURAYA_API_KEY_GELECEK",
         authDomain: "barricade-platinum-plus.firebaseapp.com",
         databaseURL: "https://barricade-platinum-plus-default-rtdb.firebaseio.com",
         projectId: "barricade-platinum-plus",
         storageBucket: "barricade-platinum-plus.appspot.com",
-        messagingSenderId: "BURAYA_ID_GELECEK",
-        appId: "BURAYA_APP_ID_GELECEK"
+        messagingSenderId: "BURAYA_SENDER_ID",
+        appId: "BURAYA_APP_ID"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -159,19 +112,15 @@
         players: [{x:3, y:6, w:10, c:'#ff4757', ty:0}, {x:3, y:0, w:10, c:'#2e86de', ty:6}]
     };
 
-    let currentRoom = null;
-    let myRole = null;
-    let myFixedId = "";
+    let currentRoom = null, myRole = null, myFixedId = "";
 
+    // Kullanıcı ID oluşturma ve yükleme
     function initUser() {
         myFixedId = localStorage.getItem('tichk_fixed_id');
         if(!myFixedId) {
             const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
             myFixedId = '';
-            for(let i=0; i<8; i++) {
-                myFixedId += chars.charAt(Math.floor(Math.random() * chars.length));
-                if(i === 3) myFixedId += "-";
-            }
+            for(let i=0; i<8; i++) { myFixedId += chars.charAt(Math.floor(Math.random()*chars.length)); if(i===3) myFixedId+="-"; }
             localStorage.setItem('tichk_fixed_id', myFixedId);
         }
         document.getElementById('display-my-id').innerText = myFixedId;
@@ -180,106 +129,95 @@
         document.getElementById('user-name-input').value = savedName;
     }
 
-    // --- ONLINE FONKSİYONLARI ---
+    // --- ONLINE MANTIK ---
     function hostGame() {
         currentRoom = myFixedId;
         myRole = 'host';
         state.mode = 'online';
+        reset(); // Oyunu sıfırla
         db.ref('rooms/' + currentRoom).set({ state: state, status: 'waiting' });
-        document.getElementById('msg').innerText = "ODA AÇILDI, RAKİP BEKLENİYOR...";
         toggleRoomModal(false);
         listenToRoom();
     }
 
     function joinGame() {
-        const targetId = document.getElementById('target-room-id').value.trim().toUpperCase();
-        if(targetId.length < 5) return;
-        
-        currentRoom = targetId;
-        const roomRef = db.ref('rooms/' + targetId);
-        
-        roomRef.once('value', (snapshot) => {
-            if (snapshot.exists()) {
+        const tid = document.getElementById('target-room-id').value.trim().toUpperCase();
+        if(tid.length < 5) return;
+        currentRoom = tid;
+        db.ref('rooms/' + tid).once('value', s => {
+            if(s.exists()){
                 myRole = 'guest';
                 state.mode = 'online';
-                roomRef.update({ status: 'playing' });
-                document.getElementById('msg').innerText = "ODAYA BAĞLANILDI!";
+                db.ref('rooms/' + tid).update({ status: 'playing' });
                 toggleRoomModal(false);
                 listenToRoom();
-            } else {
-                alert("Oda bulunamadı! Lütfen geçerli bir ID girin.");
-            }
+            } else { alert("Oda bulunamadı!"); }
         });
     }
 
     function listenToRoom() {
-        db.ref('rooms/' + currentRoom + '/state').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
+        db.ref('rooms/' + currentRoom + '/state').on('value', s => {
+            const data = s.val();
+            if(data) {
                 state = data;
                 draw();
-                if ((myRole === 'host' && state.turn === 0) || (myRole === 'guest' && state.turn === 1)) {
-                    document.getElementById('msg').innerText = "SENİN SIRAN!";
-                } else {
-                    document.getElementById('msg').innerText = "RAKİP SIRASI...";
-                }
+                updateStatusMsg();
             }
         });
     }
 
+    function updateStatusMsg() {
+        const isMyTurn = (myRole === 'host' && state.turn === 0) || (myRole === 'guest' && state.turn === 1);
+        const msg = document.getElementById('msg');
+        if(state.over) { msg.innerText = "OYUN BİTTİ!"; return; }
+        msg.innerText = isMyTurn ? "SENİN SIRAN!" : "RAKİBİN SIRASI...";
+        msg.style.color = isMyTurn ? "var(--orange)" : "#888";
+    }
+
     function syncOnlineMove() {
-        if (state.mode === 'online' && currentRoom) {
+        if(state.mode === 'online' && currentRoom) {
             db.ref('rooms/' + currentRoom + '/state').set(state);
         }
     }
 
-    // --- DİĞER OYUN MANTIKLARI (DEĞİŞMEDİ) ---
-    function toggleRoomModal(s) { document.getElementById('room-screen').style.display = s ? 'flex' : 'none'; }
+    // --- OYUN MEKANİKLERİ ---
+    function handleInput(e) {
+        if(state.over) return;
+        
+        // Online sıra kontrolü
+        if(state.mode === 'online') {
+            const isMyTurn = (myRole === 'host' && state.turn === 0) || (myRole === 'guest' && state.turn === 1);
+            if(!isMyTurn) return;
+        } else if(state.turn === 1) return; // Botun sırası
 
-    function setMode(m) {
-        if(currentRoom) db.ref('rooms/' + currentRoom).off();
-        currentRoom = null;
-        state.mode = m;
-        document.querySelectorAll('.btn-main').forEach(b => b.classList.toggle('active', b.getAttribute('data-mode') === m));
-        document.getElementById('diff-box').style.visibility = (m === 'bot') ? 'visible' : 'hidden';
-        document.getElementById('p2-label').innerText = (m === 'online') ? "RAKİP" : "BOT";
-        reset();
-    }
+        const r = canvas.getBoundingClientRect();
+        const scaleX = 350 / r.width, scaleY = 350 / r.height;
+        let cX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+        let cY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+        const x = (cX - r.left) * scaleX, y = (cY - r.top) * scaleY;
+        const cx = Math.floor(x/CELL), cy = Math.floor(y/CELL), mx = x%CELL, my = y%CELL;
 
-    function reset() {
-        state.players[0].x=3; state.players[0].y=6; state.players[0].w=10;
-        state.players[1].x=3; state.players[1].y=0; state.players[1].w=10;
-        state.walls=[]; state.turn=0; state.over=false;
-        document.getElementById('msg').innerText = "SIRA SENDE";
-        draw();
-    }
+        // Duvar koyma
+        if(mx > CELL*0.8 && cx < 6 && placeWall(cx, cy, 'v', state.turn)) { syncOnlineMove(); next(); return; }
+        if(my > CELL*0.8 && cy < 6 && placeWall(cx, cy, 'h', state.turn)) { syncOnlineMove(); next(); return; }
 
-    function draw() {
-        ctx.fillStyle = '#000'; ctx.fillRect(0,0,350,350);
-        ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 1;
-        for(let i=0; i<=GRID; i++) {
-            ctx.beginPath(); ctx.moveTo(i*CELL,0); ctx.lineTo(i*CELL,350); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(0,i*CELL); ctx.lineTo(350,i*CELL); ctx.stroke();
+        // Oyuncu hareket
+        let p = state.players[state.turn];
+        if(Math.abs(cx-p.x)+Math.abs(cy-p.y)===1 && !isBlocked(p.x,p.y,cx,cy,state.walls)) {
+            p.x=cx; p.y=cy; 
+            if(p.y === p.ty) end(state.turn === 0 ? "KAZANDIN!" : "RAKİP KAZANDI!"); 
+            else { syncOnlineMove(); next(); }
         }
-        state.walls.forEach(w => {
-            ctx.fillStyle = '#ff8c00';
-            if(w.t === 'v') ctx.fillRect((w.x+1)*CELL-4, w.y*CELL+4, 8, CELL-8);
-            else ctx.fillRect(w.x*CELL+4, (w.y+1)*CELL-4, CELL-8, 8);
-        });
-        state.players.forEach((p, i) => {
-            ctx.beginPath(); ctx.arc(p.x*CELL+CELL/2, p.y*CELL+CELL/2, CELL*0.35, 0, Math.PI*2);
-            ctx.fillStyle = p.c; ctx.fill();
-            if(state.turn === i) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke(); }
-        });
-        document.getElementById('w0').innerText = state.players[0].w;
-        document.getElementById('w1').innerText = state.players[1].w;
-        document.getElementById('c0').className = state.turn===0?'card active':'card';
-        document.getElementById('c1').className = state.turn===1?'card active':'card';
     }
 
-    function isBlocked(x1, y1, x2, y2, walls) {
-        if(x1 === x2) return walls.some(w => w.t === 'h' && w.x === x1 && w.y === Math.min(y1, y2));
-        if(y1 === y2) return walls.some(w => w.y === y1 && w.x === Math.min(x1, x2) && w.t === 'v');
+    function placeWall(x, y, t, pIdx) {
+        if(state.players[pIdx].w <= 0) return false;
+        if(state.walls.some(w=>w.x===x && w.y===y && w.t===t)) return false;
+        let test = [...state.walls, {x,y,t}];
+        if(getPathLen(state.players[0].x, state.players[0].y, 0, test) < 999 && 
+           getPathLen(state.players[1].x, state.players[1].y, 6, test) < 999) {
+            state.walls.push({x,y,t}); state.players[pIdx].w--; return true;
+        }
         return false;
     }
 
@@ -297,55 +235,26 @@
         return 999;
     }
 
-    canvas.addEventListener('mousedown', (e) => {
-        if(state.over) return;
-        if(state.mode === 'online' && ((myRole === 'host' && state.turn !== 0) || (myRole === 'guest' && state.turn !== 1))) return;
-        if(state.mode === 'bot' && state.turn === 1) return;
-
-        const r = canvas.getBoundingClientRect();
-        const x = (e.clientX-r.left)*(350/r.width), y = (e.clientY-r.top)*(350/r.height);
-        const cx = Math.floor(x/CELL), cy = Math.floor(y/CELL), mx = x%CELL, my = y%CELL;
-
-        if(mx > CELL*0.8 && cx < 6 && placeWall(cx, cy, 'v', state.turn)) { syncOnlineMove(); next(); return; }
-        if(my > CELL*0.8 && cy < 6 && placeWall(cx, cy, 'h', state.turn)) { syncOnlineMove(); next(); return; }
-
-        let p = state.players[state.turn];
-        if(Math.abs(cx-p.x)+Math.abs(cy-p.y)===1 && !isBlocked(p.x,p.y,cx,cy,state.walls)) {
-            p.x=cx; p.y=cy; 
-            if(p.y === p.ty) end(state.turn === 0 ? "PLAYER 1 KAZANDI!" : "PLAYER 2 KAZANDI!"); 
-            else { syncOnlineMove(); next(); }
-        }
-    });
-
-    function placeWall(x, y, t, pIdx) {
-        if(state.players[pIdx].w <= 0) return false;
-        if(state.walls.some(w=>w.x===x && w.y===y && w.t===t)) return false;
-        let test = [...state.walls, {x,y,t}];
-        if(getPathLen(state.players[0].x, state.players[0].y, 0, test) < 999 && 
-           getPathLen(state.players[1].x, state.players[1].y, 6, test) < 999) {
-            state.walls.push({x,y,t}); state.players[pIdx].w--; return true;
-        }
+    function isBlocked(x1, y1, x2, y2, walls) {
+        if(x1 === x2) return walls.some(w => w.t === 'h' && w.x === x1 && w.y === Math.min(y1, y2));
+        if(y1 === y2) return walls.some(w => w.y === y1 && w.x === Math.min(x1, x2) && w.t === 'v');
         return false;
     }
 
     function next() {
-        state.turn = 1 - state.turn; draw();
+        state.turn = 1 - state.turn; draw(); updateStatusMsg();
         if(!state.over && state.mode === 'bot' && state.turn === 1) setTimeout(botAction, 300);
     }
 
     function botAction() {
         if (state.over) return;
         let b = state.players[1], p = state.players[0];
-        let pDist = getPathLen(p.x, p.y, 0, state.walls);
-        let bDist = getPathLen(b.x, b.y, 6, state.walls);
+        let pDist = getPathLen(p.x, p.y, 0, state.walls), bDist = getPathLen(b.x, b.y, 6, state.walls);
         if (state.diff === 'insane' && b.w > 0 && pDist < bDist && Math.random() > 0.4) {
             let orientations = ['h', 'v'];
             for(let i=0; i<8; i++) {
-                let rx = p.x + Math.floor(Math.random()*3)-1;
-                let ry = p.y + Math.floor(Math.random()*3)-1;
-                if(rx>=0 && rx<6 && ry>=0 && ry<6 && placeWall(rx, ry, orientations[i%2], 1)) {
-                    next(); return;
-                }
+                let rx = p.x + Math.floor(Math.random()*3)-1, ry = p.y + Math.floor(Math.random()*3)-1;
+                if(rx>=0 && rx<6 && ry>=0 && ry<6 && placeWall(rx, ry, orientations[i%2], 1)) { next(); return; }
             }
         }
         let moves = [[0,1],[1,0],[-1,0],[0,-1]].filter(m => {
@@ -356,14 +265,28 @@
         if (b.y === 6) end("BOT KAZANDI!"); else next();
     }
 
-    function end(m) { state.over=true; document.getElementById('msg').innerText = m; if(state.mode==='online') syncOnlineMove(); draw(); }
-    function setDiff(d) { state.diff = d; document.querySelectorAll('.btn-diff').forEach(b => b.classList.toggle('active', b.id === 'd_'+d)); reset(); }
-    function updateName() {
-        const val = document.getElementById('user-name-input').value.trim().substring(0, 12);
-        if(val.length >= 2) { localStorage.setItem('barricade_name', val); document.getElementById('name-p1').innerText = val.toUpperCase(); }
+    function draw() {
+        ctx.fillStyle = '#000'; ctx.fillRect(0,0,350,350);
+        ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 1;
+        for(let i=0; i<=GRID; i++) { ctx.beginPath(); ctx.moveTo(i*CELL,0); ctx.lineTo(i*CELL,350); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0,i*CELL); ctx.lineTo(350,i*CELL); ctx.stroke(); }
+        state.walls.forEach(w => { ctx.fillStyle = '#ff8c00'; if(w.t==='v') ctx.fillRect((w.x+1)*CELL-4, w.y*CELL+4, 8, CELL-8); else ctx.fillRect(w.x*CELL+4, (w.y+1)*CELL-4, CELL-8, 8); });
+        state.players.forEach((p, i) => { ctx.beginPath(); ctx.arc(p.x*CELL+CELL/2, p.y*CELL+CELL/2, CELL*0.35, 0, Math.PI*2); ctx.fillStyle=p.c; ctx.fill(); if(state.turn===i){ ctx.strokeStyle='#fff'; ctx.lineWidth=3; ctx.stroke(); } });
+        document.getElementById('w0').innerText = state.players[0].w; document.getElementById('w1').innerText = state.players[1].w;
+        document.getElementById('c0').className = state.turn===0?'card active':'card'; document.getElementById('c1').className = state.turn===1?'card active':'card';
     }
 
+    function reset() { state.players[0].x=3; state.players[0].y=6; state.players[0].w=10; state.players[1].x=3; state.players[1].y=0; state.players[1].w=10; state.walls=[]; state.turn=0; state.over=false; draw(); }
+    function setMode(m) { if(currentRoom) db.ref('rooms/'+currentRoom).off(); currentRoom=null; state.mode=m; document.getElementById('p2-label').innerText = m==='online'?"RAKİP":"BOT"; document.querySelectorAll('.btn-main').forEach(b => b.classList.toggle('active', b.onclick.toString().includes(m))); reset(); }
+    function setDiff(d) { state.diff=d; document.querySelectorAll('.btn-diff').forEach(b => b.classList.toggle('active', b.innerText.toLowerCase().includes(d==='easy'?'kolay':'imkansız'))); reset(); }
+    function end(m) { state.over=true; document.getElementById('msg').innerText = m; syncOnlineMove(); draw(); }
+    function updateName() { const v = document.getElementById('user-name-input').value.trim(); if(v.length>=2){ localStorage.setItem('barricade_name', v); document.getElementById('name-p1').innerText = v.toUpperCase(); } }
+    function toggleRoomModal(s) { document.getElementById('room-screen').style.display = s?'flex':'none'; }
+
+    canvas.addEventListener('mousedown', handleInput);
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleInput(e); }, {passive: false});
+
     initUser();
+    draw();
 </script>
 </body>
 </html>
